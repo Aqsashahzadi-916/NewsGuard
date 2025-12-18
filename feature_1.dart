@@ -126,7 +126,7 @@ class ReliabilityScoringScreen extends StatelessWidget {
 
               // NEXT BUTTON
               SizedBox(
-                width: double.infinity,
+                width: 400,
                 height: 55,
                 child: ElevatedButton(
                   onPressed: () {
@@ -161,4 +161,5 @@ class ReliabilityScoringScreen extends StatelessWidget {
     );
   }
 }
+
 
