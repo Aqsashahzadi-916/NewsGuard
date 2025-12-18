@@ -124,7 +124,7 @@ class SentimentAnalysisScreen extends StatelessWidget {
 
               // NEXT BUTTON → Navigate to LocationAlertScreen
               SizedBox(
-                width: double.infinity,
+                width: 400,
                 height: 55,
                 child: ElevatedButton(
                   onPressed: () {
@@ -160,4 +160,5 @@ class SentimentAnalysisScreen extends StatelessWidget {
     );
   }
 }
+
 
