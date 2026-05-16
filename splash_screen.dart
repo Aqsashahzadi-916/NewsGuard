@@ -8,7 +8,7 @@ class SplashScreen extends StatefulWidget {
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
-
+//test
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
 
