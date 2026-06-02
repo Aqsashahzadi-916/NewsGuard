@@ -183,8 +183,9 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            ResultScreen(userInput: _searchController.text.trim()),
+        builder: (context) => ResultScreen(
+          userInput: _searchController.text.trim(),
+        ),
       ),
     );
   }
@@ -212,6 +213,11 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
+        title:  Text(
+          "NewsGuard",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),
@@ -254,6 +260,79 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
             ListTile(
+              leading: const Icon(Icons.feedback),
+              title: const Text("Feedback"),
+
+              onTap: () {
+
+                showDialog(
+                  context: context,
+
+                  builder: (context) {
+
+                    TextEditingController
+                    feedbackController =
+                    TextEditingController();
+
+                    return AlertDialog(
+
+                      title: const Text("Give Feedback"),
+
+                      content: TextField(
+                        controller: feedbackController,
+
+                        maxLines: 4,
+
+                        decoration: InputDecoration(
+                          hintText:
+                          "Enter your feedback here",
+
+                          border: OutlineInputBorder(
+                            borderRadius:
+                            BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+
+                      actions: [
+
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+
+                          child: const Text("Cancel"),
+                        ),
+
+                        ElevatedButton(
+                          onPressed: () {
+
+                            String feedback =
+                                feedbackController.text;
+
+                            print(feedback);
+
+                            Navigator.pop(context);
+
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(
+
+                              const SnackBar(
+                                content:
+                                Text("Feedback Submitted"),
+                              ),
+                            );
+                          },
+
+                          child: const Text("Submit"),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
+            ListTile(
               leading: Icon(Icons.notifications),
               title: Text("Notifications"),
               trailing: Switch(
@@ -281,11 +360,24 @@ class _HomeScreenState extends State<HomeScreen> {
             // Dropdown for App Mode (Light/Dark/System)
             if (isDropdownOpen)
               Container(
-                color: Colors.grey[200],
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey[850] // dark mode background
+                      : Colors.grey[200], // light mode background
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 child: DropdownButton<String>(
                   isExpanded: true,
                   value: selectedMode,
+                  dropdownColor: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey[900] // dark mode dropdown bg
+                      : Colors.white,    // light mode dropdown bg
+                  style: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white // dark mode text
+                        : Colors.black, // light mode text
+                  ),
                   items: ["Light", "Dark", "System"].map((mode) {
                     return DropdownMenuItem(
                       value: mode,
@@ -297,8 +389,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       setState(() {
                         selectedMode = value;
                       });
-
-                      // Update theme
                       switch (value) {
                         case "Light":
                           Provider.of<ThemeProvider>(context, listen: false)
