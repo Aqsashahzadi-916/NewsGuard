@@ -110,15 +110,7 @@ class ReliabilityScoringScreen extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                   ),
-                  Container(
-                    width: 10,
-                    height: 10,
-                    margin: const EdgeInsets.symmetric(horizontal: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade400,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
+
                 ],
               ),
 
@@ -161,5 +153,3 @@ class ReliabilityScoringScreen extends StatelessWidget {
     );
   }
 }
-
-
