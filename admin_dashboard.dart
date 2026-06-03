@@ -15,8 +15,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   void initState() {
     super.initState();
 
-    // ⏳ 2 seconds delay then navigate
-    Future.delayed(const Duration(seconds: 2), () {
+    // 1 second delay
+    Future.delayed(const Duration(seconds: 1), () {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -59,5 +59,3 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 }
-
-
