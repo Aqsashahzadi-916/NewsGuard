@@ -12,59 +12,42 @@ class ContinueAsScreen extends StatelessWidget {
         width: double.infinity,
         height: double.infinity,
 
-        // Background Gradient
+
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF005BFF),
-              Color(0xFF12D8D8),
-            ],
-          ),
+
+             color:  Color(0xFFA0F9FF),
         ),
 
         child: Column(
           children: [
-
-            // TOP AREA (LINES + LOGO)
             SizedBox(
               height: 220,
               child: Stack(
                 alignment: Alignment.topCenter,
                 children: [
 
-                  // Diagonal White Lines
                   Positioned(
-                    top: 120,
-                    left: -120,
-                    right: -120,
+                    top: 125,
                     child: Transform.rotate(
                       angle: 0.32,
                       child: Column(
                         children: [
-
-                          // Line 1
                           Container(
-                            width: 500,
+                            width: 600,
                             height: 8,
                             color: Colors.white70,
                           ),
+                          const SizedBox(height: 14),
 
-                          const SizedBox(height: 10),
-
-                          // Line 2
                           Container(
-                            width: 500,
+                            width: 600,
                             height: 8,
                             color: Colors.white70,
                           ),
+                          const SizedBox(height: 14),
 
-                          const SizedBox(height: 10),
-
-                          // Line 3
                           Container(
-                            width: 800,
+                            width: 600,
                             height: 8,
                             color: Colors.white70,
                           ),
@@ -73,7 +56,6 @@ class ContinueAsScreen extends StatelessWidget {
                     ),
                   ),
 
-                  // Logo Between Lines
                   Positioned(
                     top: 60,
                     child: Image.asset(
@@ -95,7 +77,7 @@ class ContinueAsScreen extends StatelessWidget {
               child: Text(
                 'Continue as',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: Colors.blue,
                   fontSize: 25,
                   fontWeight: FontWeight.w400,
                 ),
@@ -117,13 +99,16 @@ class ContinueAsScreen extends StatelessWidget {
               child: Container(
                 width: 205,
                 height: 40,
-                color: const Color(0xFF001BB5),
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                  borderRadius: BorderRadius.circular(30),
+                ),
                 child: const Center(
                   child: Text(
                     'User',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 16,
+                      fontSize: 18,
                     ),
                   ),
                 ),
@@ -144,23 +129,24 @@ class ContinueAsScreen extends StatelessWidget {
               child: Container(
                 width: 205,
                 height: 40,
-                color: const Color(0xFF001BB5),
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                  borderRadius: BorderRadius.circular(30),
+                ),
                 child: const Center(
                   child: Text(
                     'Guest',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 16,
+                      fontSize: 18,
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
+            )
+      ],
+    ),
+    ),
     );
   }
 }
-
-
