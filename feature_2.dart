@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'welcome.dart';
-import 'feature_3.dart'; // Import Location alert screen
 
 class SentimentAnalysisScreen extends StatelessWidget {
   const SentimentAnalysisScreen({super.key});
@@ -11,7 +10,10 @@ class SentimentAnalysisScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFA0F9FF), // Light aqua background
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 16,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -19,37 +21,39 @@ class SentimentAnalysisScreen extends StatelessWidget {
               // Skip Button
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const WelcomeScreen(),
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const WelcomeScreen(),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      "Skip",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black87,
                       ),
-                    );
-                  },
-                  child: const Text(
-                    "Skip",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black87,
                     ),
                   ),
-                ),
-              ],
+                ],
               ),
+
               const SizedBox(height: 100),
 
               // Title
               const Text(
-                "Sentiment Analysis ",
+                "Sentiment Analysis",
                 style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
                 ),
               ),
+
               const SizedBox(height: 30),
 
               // Blue box with emoji
@@ -57,7 +61,7 @@ class SentimentAnalysisScreen extends StatelessWidget {
                 height: 110,
                 width: 150,
                 decoration: BoxDecoration(
-                  color: Color(0xFF2E73FF),
+                  color: const Color(0xFF2E73FF),
                   borderRadius: BorderRadius.circular(25),
                 ),
                 child: const Center(
@@ -103,36 +107,27 @@ class SentimentAnalysisScreen extends StatelessWidget {
                     width: 13,
                     height: 13,
                     margin: const EdgeInsets.symmetric(horizontal: 6),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: Colors.blue,
                       shape: BoxShape.circle,
                     ),
                   ),
-                  Container(
-                    width: 10,
-                    height: 10,
-                    margin: const EdgeInsets.symmetric(horizontal: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade400,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
+
                 ],
               ),
 
               const SizedBox(height: 20),
 
-              // NEXT BUTTON → Navigate to LocationAlertScreen
+              // NEXT BUTTON
               SizedBox(
                 width: 400,
                 height: 55,
                 child: ElevatedButton(
                   onPressed: () {
-                    // Navigate to LocationAlertScreen
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const LocationAlertScreen(),
+                        builder: (context) => const WelcomeScreen(),
                       ),
                     );
                   },
@@ -160,5 +155,3 @@ class SentimentAnalysisScreen extends StatelessWidget {
     );
   }
 }
-
-
