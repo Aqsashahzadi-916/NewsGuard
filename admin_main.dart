@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:news_guard/login_screen.dart';
+import 'login_screen.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
@@ -9,14 +13,6 @@ class AdminScreen extends StatefulWidget {
 
 class _AdminScreenState extends State<AdminScreen> {
   int selectedTab = 0; // 0 = Users, 1 = Overview
-
-  final List<String> users = [
-    "User1@gmail.com",
-    "User2@gmail.com",
-    "User3@gmail.com",
-    "User4@gmail.com",
-    "User5@gmail.com",
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +51,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
       body: Column(
         children: [
-          // 🔹 TABS
+          //  TABS
           Container(
             color: Colors.white,
             child: Row(
@@ -68,26 +64,62 @@ class _AdminScreenState extends State<AdminScreen> {
 
           const SizedBox(height: 16),
 
-          // ================= USERS TAB =================
-          if (selectedTab == 0) ...[
-            const Text(
-              "Logged-in users",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
+          //  USERS TAB
+        if (selectedTab == 0) ...[
+    const Text(
+    "Logged-in users",
+    style: TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+    ),
+    ),
 
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: users.length,
-                itemBuilder: (context, index) {
-                  return _userCard(users[index]);
-                },
-              ),
-            ),
-          ],
+    const SizedBox(height: 16),
+    Expanded(
+    child: StreamBuilder<QuerySnapshot>(
+    stream: FirebaseFirestore.instance
+        .collection('users')
+        .snapshots(),
+    builder: (context, snapshot) {
 
-          // ================= OVERVIEW TAB =================
+    if (snapshot.connectionState ==
+    ConnectionState.waiting) {
+    return const Center(
+    child: CircularProgressIndicator(),
+    );
+    }
+
+    if (!snapshot.hasData ||
+    snapshot.data!.docs.isEmpty) {
+    return const Center(
+    child: Text("No Users Found"),
+    );
+    }
+
+    final users = snapshot.data!.docs;
+
+    return ListView.builder(
+    padding: const EdgeInsets.symmetric(
+    horizontal: 16,
+    ),
+    itemCount: users.length,
+    itemBuilder: (context, index) {
+
+    final user =
+    users[index].data() as Map<String, dynamic>;
+
+    return _userCard(
+    users[index].id,
+    user['email'] ?? "No Email",
+    user['isDisabled'] ?? false,
+    );
+    },
+    );
+    },
+    ),
+    ),
+    ],
+          //  OVERVIEW TAB
           if (selectedTab == 1) ...[
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 10),
@@ -117,7 +149,7 @@ class _AdminScreenState extends State<AdminScreen> {
                     subtitle: "High reliability",
                   ),
 
-                  // 🔹 SENTIMENTS (same UI style)
+                  //  SENTIMENTS
                   _overviewCard(
                     icon: Icons.mood,
                     title: "Sentiments",
@@ -129,11 +161,11 @@ class _AdminScreenState extends State<AdminScreen> {
             ),
           ],
         ],
-      ),
+    ),
     );
   }
 
-  // 🔹 TAB ITEM
+  //  TAB ITEM
   Widget _tabItem(String title, int index) {
     final bool isSelected = selectedTab == index;
 
@@ -170,10 +202,17 @@ class _AdminScreenState extends State<AdminScreen> {
   }
 
   // 🔹 USER CARD
-  Widget _userCard(String email) {
+  Widget _userCard(
+      String uid,
+      String email,
+      bool isDisabled,
+      ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 14,
+      ),
       decoration: BoxDecoration(
         color: Colors.grey.shade200,
         borderRadius: BorderRadius.circular(14),
@@ -181,28 +220,68 @@ class _AdminScreenState extends State<AdminScreen> {
       child: Row(
         children: [
           Expanded(
-            child: Text(email, style: const TextStyle(fontSize: 15)),
-          ),
-          Tooltip(
-            message: "Delete user",
-            child: IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: () {},
+            child: Column(
+              crossAxisAlignment:
+              CrossAxisAlignment.start,
+              children: [
+                Text(
+                  email,
+                  style: const TextStyle(
+                    fontSize: 15,
+                  ),
+                ),
+
+                Text(
+                  isDisabled
+                      ? "Disabled"
+                      : "Active",
+                  style: TextStyle(
+                    color: isDisabled
+                        ? Colors.red
+                        : Colors.green,
+                  ),
+                ),
+              ],
             ),
           ),
-          Tooltip(
-            message: "Disable user",
-            child: IconButton(
-              icon: const Icon(Icons.block),
-              onPressed: () {},
+
+          // Delete User
+          IconButton(
+            tooltip: "delete",
+            color: Colors.black,
+            icon: const Icon(Icons.delete),
+            onPressed: () async {
+              await FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(uid)
+                  .delete();
+            },
+          ),
+
+          // Disable User
+          IconButton(
+            tooltip: "Disable",
+            color: Colors.black,
+            icon: Icon(
+              isDisabled
+                  ? Icons.check_circle
+                  : Icons.block,
             ),
+            onPressed: () async {
+              await FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(uid)
+                  .update({
+                'isDisabled': !isDisabled,
+              });
+            },
           ),
         ],
       ),
     );
   }
 
-  // 🔹 OVERVIEW CARD (USED FOR ALL METRICS)
+  // OVERVIEW
   Widget _overviewCard({
     required IconData icon,
     required String title,
@@ -238,8 +317,9 @@ class _AdminScreenState extends State<AdminScreen> {
     );
   }
 
-  // 🔹 ADMIN PROFILE POPUP
+  //  ADMIN PROFILE
   void _showAdminProfile(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -261,17 +341,25 @@ class _AdminScreenState extends State<AdminScreen> {
                 "Admin Name",
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
-              const Text(
-                "admin@newsguard.com",
-                style: TextStyle(color: Colors.grey),
+              Text(
+                user?.email ?? "No Email",
+                style: const TextStyle(color: Colors.grey),
               ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                 ),
-                onPressed: () {
-                  Navigator.pop(context);
+                onPressed: () async {
+                  await FirebaseAuth.instance.signOut();
+
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const LoginScreen(),
+                    ),
+                        (route) => false,
+                  );
                 },
                 icon: const Icon(Icons.logout, color: Colors.white),
                 label: const Text(
@@ -286,4 +374,3 @@ class _AdminScreenState extends State<AdminScreen> {
     );
   }
 }
-
