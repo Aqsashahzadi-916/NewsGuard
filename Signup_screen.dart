@@ -2,8 +2,9 @@ import 'dart:developer';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:news_guard/Continue_screen.dart';
 import 'login_screen.dart';
-import 'home_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'auth_service.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -88,7 +89,8 @@ class _SignupScreenState extends State<SignupScreen> {
                         "Password",
                         suffix: IconButton(
                           icon: Icon(
-                            _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                            _obscurePassword ? Icons.visibility_off : Icons
+                                .visibility,
                           ),
                           onPressed: () {
                             setState(() {
@@ -108,11 +110,14 @@ class _SignupScreenState extends State<SignupScreen> {
                         "Confirm Password",
                         suffix: IconButton(
                           icon: Icon(
-                            _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                            _obscureConfirmPassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
                           ),
                           onPressed: () {
                             setState(() {
-                              _obscureConfirmPassword = !_obscureConfirmPassword;
+                              _obscureConfirmPassword =
+                              !_obscureConfirmPassword;
                             });
                           },
                         ),
@@ -144,7 +149,8 @@ class _SignupScreenState extends State<SignupScreen> {
                         textAlign: TextAlign.center,
                         text: TextSpan(
                           text: "Already have an account? ",
-                          style: const TextStyle(color: Colors.black87, fontSize: 14),
+                          style: const TextStyle(
+                              color: Colors.black87, fontSize: 14),
                           children: [
                             TextSpan(
                               text: "Login",
@@ -157,7 +163,8 @@ class _SignupScreenState extends State<SignupScreen> {
                                 ..onTap = () {
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                                    MaterialPageRoute(
+                                        builder: (_) => const LoginScreen()),
                                   );
                                 },
                             ),
@@ -189,47 +196,82 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  // ✅ Fixed signup function with confirm password & display name
+  //  Signup Function with Firestore
   Future<void> _signup() async {
-    if (_email.text.isEmpty || _password.text.isEmpty || _confirmPassword.text.isEmpty) {
+    if (_email.text.isEmpty ||
+        _password.text.isEmpty ||
+        _confirmPassword.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("All fields are required")),
+        const SnackBar(
+          content: Text("All fields are required"),
+        ),
       );
       return;
     }
 
-    if (_password.text.trim() != _confirmPassword.text.trim()) {
+    if (_password.text.trim() !=
+        _confirmPassword.text.trim()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Passwords do not match")),
+        const SnackBar(
+          content: Text("Passwords do not match"),
+        ),
       );
       return;
     }
 
     try {
-      final User? user = await _auth.createUserWithEmailAndPassword(
+      // Create User
+      final User? user =
+      await _auth.createUserWithEmailAndPassword(
         _email.text.trim(),
         _password.text.trim(),
       );
 
       if (user != null) {
-        // Update display name
-        await user.updateDisplayName(_name.text.trim());
+        //  Update Name
+        await user.updateDisplayName(
+          _name.text.trim(),
+        );
+
+        //  Save User to Firestore
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .set({
+
+          'uid': user.uid,
+          'name': _name.text.trim(),
+          'email': _email.text.trim(),
+          'provider': 'email',
+
+          'createdAt': DateTime.now(),
+          'lastLogin': DateTime.now(),
+
+        });
+
         log("User Created Successfully");
 
-        // Navigate to HomeScreen
+        //  Navigate
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => HomeScreen()),
+          MaterialPageRoute(
+            builder: (_) => ContinueAsScreen(),
+          ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to create user")),
+          const SnackBar(
+            content: Text("Failed to create user"),
+          ),
         );
       }
     } catch (e) {
       log("Signup error: $e");
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("An error occurred: $e")),
+        SnackBar(
+          content: Text("An error occurred: $e"),
+        ),
       );
     }
   }
