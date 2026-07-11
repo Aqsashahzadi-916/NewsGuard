@@ -1,20 +1,41 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-class GNewsService {
-  static const String apiKey = "0a3f88694ed2a5f2d05eccb102ca2ca1";
+class NewsApiService {
+  
+  static const String apiKey = "b90b70c3ff704aa5a6a787106c647140";
 
   static Future<List<dynamic>> searchNews(String query) async {
+    print("Received Query: $query");
+
+    // search as an exact phrase
+    String finalQuery = "$query politics";
+
     final url =
-        "https://gnews.io/api/v4/search?q=${Uri.encodeComponent(query)}&lang=en&max=10&apikey=$apiKey";
+        "https://newsapi.org/v2/everything?"
+        "q=${Uri.encodeComponent(finalQuery)}"
+        "&searchIn=title,description"
+        "&language=en"
+        "&sortBy=relevancy"
+        "&pageSize=20"
+        "&apiKey=$apiKey";
+
+    print("URL: $url");
 
     final response = await http.get(Uri.parse(url));
 
+    print("Status Code: ${response.statusCode}");
+    print("Body: ${response.body}");
+
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
+
+      print("Total Results: ${data["totalResults"]}");
+      print("Articles: ${data["articles"]}");
+
       return data["articles"] ?? [];
     } else {
-      throw Exception("Failed to load news");
+      throw Exception("Failed to load news: ${response.body}");
     }
   }
 }
