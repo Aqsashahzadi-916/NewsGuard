@@ -116,9 +116,9 @@ class ArticleFilterService {
 
       int score = 0;
 
-      //------------------------
+
       // Exact Phrase
-      //------------------------
+
 
       String phrase = keywords.join(" ").toLowerCase();
 
@@ -126,9 +126,9 @@ class ArticleFilterService {
         score += 15;
       }
 
-      //------------------------
+
       // Entity Matching
-      //------------------------
+
 
       int entityMatch = 0;
 
@@ -139,9 +139,9 @@ class ArticleFilterService {
         }
       }
 
-      //------------------------
+
       // Event Matching
-      //------------------------
+
 
       int eventMatch = 0;
 
@@ -152,9 +152,9 @@ class ArticleFilterService {
         }
       }
 
-      //------------------------
+
       // Political Context
-      //------------------------
+
 
       for (String word in politicalWords) {
         if (text.contains(word)) {
@@ -162,9 +162,7 @@ class ArticleFilterService {
         }
       }
 
-      //------------------------
-      // Bad Words
-      //------------------------
+
 
       for (String bad in badWords) {
         if (text.contains(bad)) {
@@ -172,33 +170,16 @@ class ArticleFilterService {
         }
       }
 
-      //------------------------
-      // Mandatory Checks
-      //------------------------
-
-      if (entities.isNotEmpty && entityMatch == 0) {
-        score = -100;
-      }
-
-      if (events.isNotEmpty && eventMatch == 0) {
-        score = -100;
-      }
-
-      //------------------------
-      // Debug
-      //------------------------
-
       print("------------------------------");
       print(title);
       print("Entity Match : $entityMatch");
       print("Event Match : $eventMatch");
       print("Final Score : $score");
 
-      //------------------------
-      // Final Decision
-      //------------------------
 
-      if (score >= 10) {
+      // Final Decision
+
+      if (score >= 5) {
         filtered.add(article);
       }
     }
