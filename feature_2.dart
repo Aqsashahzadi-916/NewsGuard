@@ -56,7 +56,7 @@ class SentimentAnalysisScreen extends StatelessWidget {
 
               const SizedBox(height: 30),
 
-              // Blue box with emoji
+              // Blue box
               Container(
                 height: 110,
                 width: 150,
