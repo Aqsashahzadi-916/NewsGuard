@@ -2,14 +2,14 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class NewsApiService {
-  
+
   static const String apiKey = "b90b70c3ff704aa5a6a787106c647140";
 
   static Future<List<dynamic>> searchNews(String query) async {
     print("Received Query: $query");
 
-    // search as an exact phrase
-    String finalQuery = "$query politics";
+
+    String finalQuery = query;
 
     final url =
         "https://newsapi.org/v2/everything?"
