@@ -135,7 +135,7 @@ class ContinueAsScreen extends StatelessWidget {
                 ),
                 child: const Center(
                   child: Text(
-                    'Guest',
+                    'Admin',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 18,
