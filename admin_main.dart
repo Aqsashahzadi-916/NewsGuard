@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:news_guard/login_screen.dart';
-import 'login_screen.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
@@ -133,28 +132,166 @@ class _AdminScreenState extends State<AdminScreen> {
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
-                  _overviewCard(
-                    icon: Icons.people,
-                    title: "2",
-                    subtitle: "Total users",
+                  //Users
+                  StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('users')
+                        .snapshots(),
+                    builder: (context, snapshot) {
+
+                      if (snapshot.hasError) {
+                        return Text("Error: ${snapshot.error}");
+                      }
+
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+
+                      int totalUsers = snapshot.data!.docs.length;
+
+                      return _overviewCard(
+                        icon: Icons.people,
+                        title: totalUsers.toString(),
+                        subtitle: "Total users",
+                      );
+                    },
                   ),
-                  _overviewCard(
-                    icon: Icons.article,
-                    title: "12",
-                    subtitle: "Total news submitted",
+                  //News
+                  StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collectionGroup('analyses')
+                        .snapshots(),
+                    builder: (context, snapshot) {
+
+                      if (snapshot.hasError) {
+                        return Text("Error: ${snapshot.error}");
+                      }
+
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+
+                      int totalNews = snapshot.data!.docs.length;
+
+                      return _overviewCard(
+                        icon: Icons.article,
+                        title: totalNews.toString(),
+                        subtitle: "Total news submitted",
+                      );
+                    },
                   ),
-                  _overviewCard(
-                    icon: Icons.trending_up,
-                    title: "85%",
-                    subtitle: "High reliability",
+                  // reliability
+                  StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collectionGroup('analyses')
+                        .snapshots(),
+                    builder: (context, snapshot) {
+
+                      if (snapshot.hasError) {
+                        return Text("Error: ${snapshot.error}");
+                      }
+
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+
+                      double highestReliability = 0;
+
+                      for (var doc in snapshot.data!.docs) {
+                        final data = doc.data() as Map<String, dynamic>;
+
+                        double score =
+                        (data['reliabilityScore'] ?? 0).toDouble();
+
+                        if (score > highestReliability) {
+                          highestReliability = score;
+                        }
+                      }
+
+                      return _overviewCard(
+                        icon: Icons.trending_up,
+                        title: "${highestReliability.toStringAsFixed(1)}%",
+                        subtitle: "Highest reliability",
+                      );
+                    },
                   ),
 
-                  //  SENTIMENTS
-                  _overviewCard(
-                    icon: Icons.mood,
-                    title: "Sentiments",
-                    subtitle: "Positive 19 | Neutral 5 | Negative 2",
-                    isBigText: false,
+                  //  sentiments
+                  StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collectionGroup('analyses')
+                        .snapshots(),
+                    builder: (context, snapshot) {
+
+                      if (snapshot.hasError) {
+                        return Text("Error: ${snapshot.error}");
+                      }
+
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+
+                      int positive = 0;
+                      int neutral = 0;
+                      int negative = 0;
+
+                      for (var doc in snapshot.data!.docs) {
+                        final data = doc.data() as Map<String, dynamic>;
+
+                        String sentiment =
+                        (data['sentiment'] ?? '').toString().toLowerCase();
+
+                        if (sentiment == "positive") {
+                          positive++;
+                        } else if (sentiment == "neutral") {
+                          neutral++;
+                        } else if (sentiment == "negative") {
+                          negative++;
+                        }
+                      }
+
+                      return _overviewCard(
+                        icon: Icons.mood,
+                        title: "Sentiments",
+                        subtitle:
+                        "Positive $positive | Neutral $neutral | Negative $negative",
+                        isBigText: false,
+                      );
+                    },
+                  ),
+                  // Feedback
+                  StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('feedback')
+                        .snapshots(),
+                    builder: (context, snapshot) {
+
+                      if (snapshot.hasError) {
+                        return Text("Error: ${snapshot.error}");
+                      }
+
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+
+                      int totalFeedback = snapshot.data!.docs.length;
+
+                      return _overviewCard(
+                        icon: Icons.feedback,
+                        title: totalFeedback.toString(),
+                        subtitle: "Feedback Submitted",
+                      );
+                    },
                   ),
                 ],
               ),
@@ -164,7 +301,6 @@ class _AdminScreenState extends State<AdminScreen> {
     ),
     );
   }
-
   //  TAB ITEM
   Widget _tabItem(String title, int index) {
     final bool isSelected = selectedTab == index;
@@ -297,7 +433,11 @@ class _AdminScreenState extends State<AdminScreen> {
       ),
       child: Column(
         children: [
-          Icon(icon, size: 28),
+          Icon(
+            icon,
+            size: 28,
+            color: Colors.black,
+          ),
           const SizedBox(height: 8),
           Text(
             title,
@@ -338,7 +478,7 @@ class _AdminScreenState extends State<AdminScreen> {
               ),
               const SizedBox(height: 10),
               const Text(
-                "Admin Name",
+                "Admin Email",
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               Text(
