@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'feature_1.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:news_guard/feature_1.dart';
+import 'package:news_guard/Home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -8,10 +10,9 @@ class SplashScreen extends StatefulWidget {
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
-//test
+
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-
   late AnimationController _controller;
   late Animation<double> _fade;
   late Animation<double> _scale;
@@ -31,12 +32,24 @@ class _SplashScreenState extends State<SplashScreen>
       curve: Curves.easeIn,
     );
 
-    _scale = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    _scale = Tween<double>(
+      begin: 0.8,
+      end: 1.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeOut,
+      ),
     );
 
-    _bounce = Tween<double>(begin: 0.0, end: 8.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
+    _bounce = Tween<double>(
+      begin: 0.0,
+      end: 8.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.elasticOut,
+      ),
     );
 
     _controller.forward();
@@ -44,14 +57,25 @@ class _SplashScreenState extends State<SplashScreen>
     Future.delayed(const Duration(seconds: 3), () {
       if (!mounted) return;
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const ReliabilityScoringScreen(),
-        ),
-      );
+      final User? user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => HomeScreen(),
+          ),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const ReliabilityScoringScreen(),
+          ),
+        );
+      }
     });
-  } // ✅ initState properly closed here
+  }
 
   @override
   void dispose() {
@@ -68,12 +92,15 @@ class _SplashScreenState extends State<SplashScreen>
           animation: _controller,
           builder: (context, child) {
             return Transform.translate(
-              offset: Offset(0, -_bounce.value),
+              offset: Offset(
+                0,
+                -_bounce.value,
+              ),
               child: Transform.scale(
                 scale: _scale.value,
                 child: Opacity(
                   opacity: _fade.value,
-                  child: Image.asset (
+                  child: Image.asset(
                     "assets/logo.png",
                     width: 180,
                     height: 180,
