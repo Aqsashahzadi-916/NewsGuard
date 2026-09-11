@@ -1,6 +1,7 @@
+
 import 'package:flutter/material.dart';
 import 'feature_2.dart'; // SentimentAnalysisScreen
-import 'welcome.dart'; // Add this import for WelcomeScreen
+import 'welcome.dart';
 
 class ReliabilityScoringScreen extends StatelessWidget {
   const ReliabilityScoringScreen({super.key});
@@ -54,7 +55,7 @@ class ReliabilityScoringScreen extends StatelessWidget {
 
               const SizedBox(height: 30),
 
-              // Blue Box with Arrow Icon
+              // Blue Box
               Container(
                 height: 110,
                 width: 150,
