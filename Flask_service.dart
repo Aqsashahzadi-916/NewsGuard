@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String baseUrl = "http://192.168.0.103:5000";
+  static const String baseUrl = "http://10.124.68.202:5000";
 
   static Future<Map<String, dynamic>> predict(String text) async {
     final response = await http.post(
