@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,7 +16,6 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   final TextEditingController _emailController =
@@ -26,6 +26,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _obscureText = true;
 
+  String? _emailError;
+  String? _passwordError;
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -33,28 +36,38 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  //  EMAIL LOGIN
-
   Future<void> _loginWithEmail() async {
-
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
-    if (email.isEmpty || password.isEmpty) {
+    bool isValid = true;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            "Email and password cannot be empty",
-          ),
-        ),
-      );
+    setState(() {
+      _emailError = null;
+      _passwordError = null;
+    });
 
+    if (email.isEmpty) {
+      _emailError = "Email is required";
+      isValid = false;
+    } else if (!RegExp(
+      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+    ).hasMatch(email)) {
+      _emailError = "Enter a valid email address";
+      isValid = false;
+    }
+
+    if (password.isEmpty) {
+      _passwordError = "Password is required";
+      isValid = false;
+    }
+
+    if (!isValid) {
+      setState(() {});
       return;
     }
 
     try {
-
       final UserCredential userCredential =
       await _auth.signInWithEmailAndPassword(
         email: email,
@@ -64,8 +77,8 @@ class _LoginScreenState extends State<LoginScreen> {
       final User? user = userCredential.user;
 
       if (user != null) {
-
         log("Email Login Successful");
+
         final userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
@@ -73,29 +86,27 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (userDoc.exists &&
             (userDoc.data()?['isDisabled'] ?? false)) {
-
           await FirebaseAuth.instance.signOut();
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Your account has been disabled"),
-            ),
-          );
+          if (!mounted) return;
 
           return;
         }
-        // Save user in Firestore
+
         await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
-            .set({
+            .set(
+          {
+            'uid': user.uid,
+            'email': user.email,
+            'provider': 'email',
+            'lastLogin': DateTime.now(),
+          },
+          SetOptions(merge: true),
+        );
 
-          'uid': user.uid,
-          'email': user.email,
-          'provider': 'email',
-          'lastLogin': DateTime.now(),
-
-        }, SetOptions(merge: true));
+        if (!mounted) return;
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -110,137 +121,114 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
       }
+    } on FirebaseAuthException catch (e) {
+      log("Firebase Login Error: ${e.code}");
 
+      if (!mounted) return;
+
+      if (e.code == 'wrong-password' ||
+          e.code == 'invalid-credential') {
+        setState(() {
+          _passwordError = "Invalid password";
+        });
+      }
     } catch (e) {
-
       log("Email Login Error: $e");
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            "Login failed. Check credentials.",
-          ),
-        ),
-      );
     }
   }
 
-  // UI
-
   @override
   Widget build(BuildContext context) {
-
-    final height =
-        MediaQuery.of(context).size.height;
+    final height = MediaQuery.of(context).size.height;
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
-
       body: Stack(
         children: [
-
-          // Background
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage(
-                  "assets/newspaper.png",
-                ),
+                image: AssetImage("assets/newspaper.png"),
                 fit: BoxFit.cover,
               ),
             ),
           ),
-
-          // Blur
           BackdropFilter(
             filter: ImageFilter.blur(
               sigmaX: 5,
               sigmaY: 5,
             ),
-
             child: Container(
               color: Colors.black.withOpacity(0.15),
             ),
           ),
-
-          // Login UI
           Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
-
               child: ConstrainedBox(
-                constraints:
-                const BoxConstraints(
+                constraints: const BoxConstraints(
                   maxWidth: 400,
                 ),
-
                 child: Column(
                   crossAxisAlignment:
                   CrossAxisAlignment.stretch,
-
                   children: [
-
                     SizedBox(
                       height: height * 0.06,
                     ),
-
                     const Text(
                       "We’re Glad to see you",
-
                       style: TextStyle(
                         fontSize: 18,
                         color: Colors.white,
-                        fontWeight:
-                        FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-
                     const SizedBox(height: 24),
-
-                    // Email
                     TextField(
                       controller: _emailController,
-
+                      keyboardType:
+                      TextInputType.emailAddress,
                       style: const TextStyle(
                         color: Colors.white,
                       ),
-
-                      decoration:
-                      _inputDecoration(
+                      onChanged: (value) {
+                        if (_emailError != null) {
+                          setState(() {
+                            _emailError = null;
+                          });
+                        }
+                      },
+                      decoration: _inputDecoration(
                         "Email Address",
+                        errorText: _emailError,
                       ),
                     ),
-
                     const SizedBox(height: 16),
-
-                    // Password
                     TextField(
-                      controller:
-                      _passwordController,
-
+                      controller: _passwordController,
                       obscureText: _obscureText,
-
                       style: const TextStyle(
                         color: Colors.white,
                       ),
-
-                      decoration:
-                      _inputDecoration(
+                      onChanged: (value) {
+                        if (_passwordError != null) {
+                          setState(() {
+                            _passwordError = null;
+                          });
+                        }
+                      },
+                      decoration: _inputDecoration(
                         "Password",
-
+                        errorText: _passwordError,
                         suffix: IconButton(
                           icon: Icon(
                             _obscureText
-                                ? Icons
-                                .visibility_off
-                                : Icons
-                                .visibility,
-
+                                ? Icons.visibility_off
+                                : Icons.visibility,
                             color: Colors.white,
                           ),
-
                           onPressed: () {
-
                             setState(() {
                               _obscureText =
                               !_obscureText;
@@ -249,105 +237,69 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 24),
-
-                    // Login Button
                     SizedBox(
                       height: 48,
-
                       child: ElevatedButton(
-                        onPressed:
-                        _loginWithEmail,
-
-                        style:
-                        ElevatedButton
-                            .styleFrom(
-                          backgroundColor:
-                          Colors.blue,
-
-                          foregroundColor:
-                          Colors.white,
-
-                          shape:
-                          RoundedRectangleBorder(
+                        onPressed: _loginWithEmail,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
                             borderRadius:
-                            BorderRadius
-                                .circular(
-                              30,
-                            ),
+                            BorderRadius.circular(30),
                           ),
                         ),
-
-                        child:
-                        const Text("Login"),
+                        child: const Text("Login"),
                       ),
                     ),
-
                     const SizedBox(height: 8),
-
-                    // Forgot Password
                     TextButton(
                       onPressed: () {
-
                         Navigator.push(
                           context,
-
                           MaterialPageRoute(
                             builder: (_) =>
                             const ForgotPasswordScreen(),
                           ),
                         );
                       },
-
                       child: const Text(
                         "Forgot the password?",
-
                         style: TextStyle(
                           color: Colors.white,
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 16),
-                    // Signup
                     GestureDetector(
                       onTap: () {
-
                         Navigator.push(
                           context,
-
                           MaterialPageRoute(
                             builder: (_) =>
                             const SignupScreen(),
                           ),
                         );
                       },
-
                       child: const Center(
                         child: Text.rich(
                           TextSpan(
                             text:
                             "Don't have an account? ",
-
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 14,
                             ),
-
                             children: [
-
                               TextSpan(
                                 text: "Sign up",
-
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontWeight:
                                   FontWeight.bold,
-
                                   decoration:
-                                  TextDecoration
-                                      .underline,
+                                  TextDecoration.underline,
                                 ),
                               ),
                             ],
@@ -365,32 +317,44 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  //  INPUT DECORATION
-
   InputDecoration _inputDecoration(
       String hint, {
         Widget? suffix,
+        String? errorText,
       }) {
-
     return InputDecoration(
-
       hintText: hint,
-
       hintStyle: const TextStyle(
         color: Colors.white70,
       ),
-
       filled: true,
-
-      fillColor:
-      Colors.white.withOpacity(0.15),
-
+      fillColor: Colors.white.withOpacity(0.15),
       suffixIcon: suffix,
-
+      errorText: errorText,
+      errorStyle: const TextStyle(
+        color: Colors.red,
+        fontSize: 12,
+      ),
       border: OutlineInputBorder(
-        borderRadius:
-        BorderRadius.circular(30),
-
+        borderRadius: BorderRadius.circular(30),
+        borderSide: BorderSide.none,
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(30),
+        borderSide: const BorderSide(
+          color: Colors.red,
+          width: 1.5,
+        ),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(30),
+        borderSide: const BorderSide(
+          color: Colors.red,
+          width: 1.5,
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(30),
         borderSide: BorderSide.none,
       ),
     );
